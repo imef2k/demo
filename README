@@ -1,0 +1,6 @@
+1.  To compile/build the Restful WebService, type  'mvn clean install' at project root in command line.
+2. To run the webservice type 'java -jar target/demo-0.1.0.jar' at project root in command line.
+3. Example requests:
+   http://localhost:8080/product?labelType=ShowPercDscount
+   http://localhost:8080/product?labelType=ShowWasNow
+   http://localhost:8080/product?labelType=ShowWasThenNow
