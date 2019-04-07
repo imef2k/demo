@@ -11,12 +11,13 @@ import java.util.stream.Collectors;
 
 public class ExternalToInternalMapper {
     public static List<Product> convert(List<ExternalProduct> externalProduct, String labelType) {
-        List<Product> product = externalProduct.stream()
+        List<ExternalProduct> externalProd = externalProduct.stream()
                                 .filter(p -> priceIsReduced(p))
-                                .sorted((p1, p2) -> (int)((Double.parseDouble(p1.getPrice().getNow()) - Double.parseDouble(p1.getPrice().getWas())) -
-                                                    (Double.parseDouble(p2.getPrice().getNow()) - Double.parseDouble(p2.getPrice().getWas())))
-                                )
-                                .map(p -> mapper(p, labelType))
+                                .sorted(ExternalToInternalMapper::comparePrices)
+                                .collect(Collectors.toList());
+
+
+        List<Product> product = externalProd.stream().map(p -> mapper(p, labelType))
                                 .collect(Collectors.toList());
         return product;
     }
@@ -41,7 +42,7 @@ public class ExternalToInternalMapper {
         String now = priceFormat(price.getNow(), price.getCurrency());
         String was = priceFormat(price.getWas(), price.getCurrency());
         String then = price.getThen2().equals("")?price.getThen1():price.getThen2();
-        then = priceFormat(price.getNow(), price.getCurrency());
+        then = priceFormat(then, price.getCurrency());
         String percentDiscount = percentDiscount(price.getWas(), price.getNow());
 
 
@@ -91,5 +92,11 @@ public class ExternalToInternalMapper {
                 .color(colorSwatches.getColor())
                 .rgbColor(ColorToRGBConverter.convert(colorSwatches.getBasicColor()))
                 .skuid(colorSwatches.getSkuId()).build();
+    }
+    private static int comparePrices(ExternalProduct p1, ExternalProduct p2) {
+        int diff1 = (int) (Double.parseDouble(p1.getPrice().getNow()) - Double.parseDouble(p1.getPrice().getWas()));
+        int diff2 = (int) (Double.parseDouble(p2.getPrice().getNow()) - Double.parseDouble(p2.getPrice().getWas()));
+        return Integer.compare((int)(100 * (Double.parseDouble(p1.getPrice().getNow())/ Double.parseDouble(p1.getPrice().getWas()))),
+                               (int)(100 * (Double.parseDouble(p2.getPrice().getNow()) / Double.parseDouble(p2.getPrice().getWas()))));
     }
 }
